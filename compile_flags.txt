@@ -1,0 +1,5 @@
+-xc++
+-lstdc++
+-std=c++0x
+-Iinclude
+-Iexternal/SQLite
