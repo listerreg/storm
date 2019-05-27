@@ -20,8 +20,7 @@ $(OUT_FILE): $(OBJECTS) $(DALLIBDIR)/$(DALLIB)
 	$(CXX) -o $(OUT_FILE) $(OBJECTS) $(CXXLINKFLAGS)
 
 %.o: %.cpp
-#	$(CXX) $(DEPFLAGS) $(CXXFLAGS) -c -Wall -pedantic -std=c++0x $<
-	$(CXX) $(DEPFLAGS) $(CXXFLAGS) -c -std=c++0x $<
+	$(CXX) $(DEPFLAGS) $(CXXFLAGS) -c -std=c++14 -Wall -Wextra -pedantic $<
 
 debug: $(OUT_FILE)
 ndebug: $(OUT_FILE)

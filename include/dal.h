@@ -201,7 +201,8 @@ void Retrievable::RegisterField(std::string name, T address) {
                 name,
                 DbDataType::DB_INTEGER,
                 static_cast<void*>(address),
-                sizeof(typename std::remove_pointer<T>::type)
+                sizeof(typename std::remove_pointer<T>::type),
+		std::string()
         };
 
         SavePrototype(prototype);
@@ -231,7 +232,8 @@ void Retrievable::RegisterField(std::string name, T address) {
                 name,
                 DbDataType::DB_FLOAT,
                 static_cast<void*>(address),
-                sizeof(typename std::remove_pointer<T>::type)
+                sizeof(typename std::remove_pointer<T>::type),
+		std::string()
         };
 
         SavePrototype(prototype);
@@ -245,7 +247,8 @@ void Retrievable::RegisterField(std::string name, T address) {
                 name,
                 DbDataType::DB_TEXT,
                 static_cast<void*>(address),
-                sizeof(typename std::remove_pointer<typename std::remove_pointer<T>::type>::type)
+                sizeof(typename std::remove_pointer<typename std::remove_pointer<T>::type>::type),
+		std::string()
         };
 
         SavePrototype(prototype);
@@ -259,7 +262,8 @@ void Retrievable::RegisterField(std::string name, T address) {
                 name,
                 DbDataType::DB_TEXT,
                 static_cast<void*>(address),
-                0
+                0,
+		std::string()
         };
 
         SavePrototype(prototype);
@@ -272,7 +276,8 @@ void Retrievable::RegisterField(std::string name, T address) {
                 name,
                 DbDataType::DB_TIME,
                 static_cast<void*>(address),
-                0
+                0,
+		std::string()
         };
 
         SavePrototype(prototype);

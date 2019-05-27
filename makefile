@@ -44,8 +44,7 @@ dal.o: CXXFLAGS += -I$(SQLITEDIR) -I$(includedir)
 # symbol | impose a specific ordering on the rules to be invoked without forcing the target to be updated if one of those rules is executed
 # since this is a pattern rule it's just like an implicit rule - it's subsidiary not obligatory thus if there is no %.cpp file this rule is not applicable
 %.o: %.cpp | $(objdestdir)
-#	$(CXX) $(CXXFLAGS) -c -Wall -pedantic -std=c++0x $<
-	$(CXX) $(CXXFLAGS) -c -std=c++0x $< -o $(objdestdir)/$@
+	$(CXX) $(CXXFLAGS) -c -std=c++14 -Wall -Wextra -pedantic $< -o $(objdestdir)/$@
 
 
 $(objdestdir) $(libdestdir) $(includedir):

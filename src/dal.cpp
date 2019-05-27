@@ -998,7 +998,6 @@ void DbService::FillEntity(sqlite3_stmt* stmt, Retrievable &entity) {
 	const vector<dbValueSchema>		&columns(entity.GetSchema());
 
 	//loop over columns
-	size_t column_count;
 	for (int i = 0, column_count = columns.size(); i < column_count; ++i) {
 		switch (columns[i].type) {
 			case DB_INTEGER: {
@@ -1041,7 +1040,6 @@ void DbService::CheckDbSchema(Retrievable& entity) {
 		sqlite3_stmt			*stmt = nullptr;
 		int				rc = -1;
 		const vector<dbValueSchema>	&columns(entity.GetSchema());
-		size_t				column_count;
 		bool				inconsistent = false;
 
 		assert(columns.size() > 1);
@@ -1132,7 +1130,6 @@ void DbService::RecreateTable(Retrievable& entity) {
 
 	sql = "DROP TABLE IF EXISTS " + entity.tableName + "; CREATE TABLE " + entity.tableName + " ( ";
 
-	size_t column_count;
 	for (int i = 0, column_count = columns.size(); i < column_count; ++i) {
 		sql += columns[i].name + " " + dbDataType2string(columns[i].type);
 		if (i == 0) {
@@ -1168,6 +1165,9 @@ string DbService::dbDataType2string(DbDataType type) {
 		case DB_TIME:
 		case DB_TEXT:
 			return {"text"};
+		default:
+			assert(0);
+			return "just to suppress a warning";
 	}
 }
 #endif

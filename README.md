@@ -158,7 +158,7 @@ vector<Person> results = db.RetrieveEntities<Person>("name LIKE 'Moon%'");
 
 ## Transactions and bulk operations
 
-We can write multiple entities in one atomic transactions. To do this we're passing the `std::vector` consisting of pointers to the entities to the `SaveEntities` function. It's worth noting that entities don't have to be of the same type.
+We can write multiple entities in one atomic transaction. To do this we're passing the `std::vector` consisting of pointers to the entities to the `SaveEntities` function. It's worth noting that entities don't have to be of the same type.
 
 ```c++
 Person person1;
@@ -175,7 +175,7 @@ db.SaveEntities(ourEntities);
 ## Code first
 
 If we will compile the STORM library with the `DB_INIT` flag (`make dbinit`) then the library will take responsibility for creating the database file if it doesn't exist and for updating database schema where necessary.
-> **NOTE 1:** it won't create directories if the path to the database file include some. They need to be present already.
+> **NOTE 1:** it won't create directories if the path to the database file includes some. They need to be present already.
 > **NOTE 2:** tables with the same name and a different schema will be dropped!
 
 
