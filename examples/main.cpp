@@ -5,7 +5,6 @@
 #include <cstdlib>
 #include <cassert>
 
-using namespace std;
 using namespace aw_storm;
 
 /*
@@ -71,7 +70,7 @@ public:
 	void SetPrice(double value) { price = value; }
 
 	int64_t host_id = 0;
-	string hostName;
+	std::string hostName;
 	char *addressIP = nullptr;
 private:
 	virtual void Initialize() {
@@ -94,7 +93,7 @@ public:
 	Service() : Retrievable("Services") {}
 	int service_id = 0;
 	int64_t host_id = 0;
-	string name;
+	std::string name;
 	uint32_t port = 0;
 	tm start_date;
 private:
@@ -114,7 +113,7 @@ class One2one : public Retrievable {
 public:
 	One2one() : Retrievable("One2ones") {}
 	int host_id = 0;
-	string desc;
+	std::string desc;
 
 	void Test() {}
 private:
@@ -130,8 +129,8 @@ private:
 class StringKey: public Retrievable {
 public:
 	StringKey() : Retrievable("StringKeys") {}
-	string sk_id;
-	string desc;
+	std::string sk_id;
+	std::string desc;
 
 	void Test() {}
 private:
@@ -213,7 +212,7 @@ int main() {
 	service2.start_date = start_d;
 
 	// now we can write all the new various Retrievable objects to the database at once. We just need to put the pointers to them in a std::vector
-	vector<Retrievable*> ourEntities = { &host3, &service1, &service2 };
+	std::vector<Retrievable*> ourEntities = { &host3, &service1, &service2 };
 
 	// this is an atomic transaction so all of them will be written or none of them
 	db.SaveEntities(ourEntities);
@@ -224,7 +223,7 @@ int main() {
 	h2.hostName = "zzzzzzzzzzzzzzzzzzzz";
 	h3.hostName = "zzzzzzzzzzzzzzzzzzzz";
 	h2.host_id = h3.host_id = 9999;
-	vector<Retrievable*> ourInvalidEntities = { &h1, &h2, &h3 };
+	std::vector<Retrievable*> ourInvalidEntities = { &h1, &h2, &h3 };
 
 	try {
 		db.SaveEntities(ourInvalidEntities);
@@ -232,11 +231,11 @@ int main() {
 	} catch(...) {}
 
 	// we can check if any of the above entities was written to the database. For this purpose we're using the RetrieveEntities function that takes predicate
-	vector<Host> result(db.RetrieveEntities<Host>("host_name LIKE '%zzzz%'"));
+	std::vector<Host> result(db.RetrieveEntities<Host>("host_name LIKE '%zzzz%'"));
 	assert(!result.size());
 
 	// and to compare
-	vector<Service>result2(db.RetrieveEntities<Service>("name LIKE 'web%'"));
+	std::vector<Service>result2(db.RetrieveEntities<Service>("name LIKE 'web%'"));
 	assert(result2.size() >= 2);
 
 	// also trying to write with an invalid FK will fail (that is with an FK linking to a non-existent parent)
@@ -255,7 +254,7 @@ int main() {
 	assert(service3.port == 80);
 
 	// we can also retrieve a collection of child entities (related to the parent by means of the Foreign Key)
-	vector<Service> childEntities = db.RetrieveChildEntities<Service>(host2);
+	std::vector<Service> childEntities = db.RetrieveChildEntities<Service>(host2);
 	assert(childEntities.size() == 2);
 
 	// an example with the one-to-one(zero) relation
@@ -269,7 +268,7 @@ int main() {
 	StringKey strK;
 	time_t rawtime2;
 	time (&rawtime2);
-	string stime = ctime (&rawtime2);
+	std::string stime = ctime (&rawtime2);
 	strK.sk_id = stime.substr(0, stime.length() - 1);
 	strK.desc = "my key must be unique";
 
@@ -282,7 +281,7 @@ int main() {
 	assert(o2o1.desc == "new value");
 
 	// and get it as the std::string
-	string value = service3.GetStrValue("port");
+	std::string value = service3.GetStrValue("port");
 	assert(value == "80");
 
 	// of course it's not limited to string fields
@@ -290,17 +289,17 @@ int main() {
 	assert(host3.GetPrice() == 99.9);
 
 	// an additional feature is ability to serialize Retrievable objects to the JSON format
-	cout << endl << "STARRING:" << endl << endl;
-	cout << "host2: " << retrievable2JSON(host2) << endl;
-	cout << endl << "host3: " << retrievable2JSON(host3) << endl;
-	cout << endl << "service1: " <<	retrievable2JSON(service1) << endl;
-	cout << endl << "service2: " << retrievable2JSON(service2) << endl;
-	cout << endl << "service3: " << retrievable2JSON(service3) << endl;
-	cout << endl << "child entities:" << endl;
+	std::cout << "\nSTARRING:\n\n";
+	std::cout << "host2: " << retrievable2JSON(host2);
+	std::cout << "\n\nhost3: " << retrievable2JSON(host3);
+	std::cout << "\n\nservice1: " <<	retrievable2JSON(service1);
+	std::cout << "\n\nservice2: " << retrievable2JSON(service2);
+	std::cout << "\n\nservice3: " << retrievable2JSON(service3);
+	std::cout << "\n\nchild entities:\n";
 
 	for (Service &child: childEntities) {
-		cout << "	- " << retrievable2JSON(child) << endl;
+		std::cout << "	- " << retrievable2JSON(child) << "\n";
 	}
-	cout << endl << "o2o1: " << retrievable2JSON(o2o1) << endl;
-	cout << endl << "strK: " << retrievable2JSON(strK) << endl << endl;
+	std::cout << "\no2o1: " << retrievable2JSON(o2o1) << "\n";
+	std::cout << "\nstrK: " << retrievable2JSON(strK) << std::endl;
 }

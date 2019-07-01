@@ -8,13 +8,10 @@
 #include <sstream>
 #include <ctime>
 
-
-
-using namespace std;
 using namespace aw_storm;
 
 #ifdef DB_INIT
-unordered_set<string> DbService::initializedTables;
+std::unordered_set<std::string> DbService::initializedTables;
 #endif
 
 // private ctor for move semantics
@@ -34,7 +31,7 @@ DbValue::DbValue(const dbValuePrototype &prototype) {
 					break;
 				length = strlen(cstr) + 1;
 			} else { // it's std::string
-				const string* str = static_cast<const string*>(prototype.field);
+				const std::string* str = static_cast<const std::string*>(prototype.field);
 				length = str->size() + 1;
 				cstr = str->c_str();
 			}
@@ -132,7 +129,7 @@ void swap(DbValue &first, DbValue &second) noexcept {
 } // namespace aw_storm
 
 
-Retrievable::Retrievable(string tableName) : tableName(tableName), prototypes(*this) {}
+Retrievable::Retrievable(std::string tableName) : tableName(tableName), prototypes(*this) {}
 
 Retrievable::Retrievable(const Retrievable &other) : Retrievable(other.tableName) {}
 
@@ -152,24 +149,24 @@ Retrievable& Retrievable::operator=(Retrievable &&other) {
 	return *this;
 }
 
-DbValue Retrievable::GetValue(const string &name) {
+DbValue Retrievable::GetValue(const std::string &name) {
 
-	unordered_map<string, dbValuePrototype> &valuePrototypesMap = prototypes.GetPrototypesMap();
+	std::unordered_map<std::string, dbValuePrototype> &valuePrototypesMap = prototypes.GetPrototypesMap();
 
-	unordered_map<string, dbValuePrototype>::const_iterator got = valuePrototypesMap.find(name);
+	std::unordered_map<std::string, dbValuePrototype>::const_iterator got = valuePrototypesMap.find(name);
 
 	if (got == valuePrototypesMap.end())
-		throw runtime_error("there's no property with that name");
+		throw std::runtime_error("there's no property with that name");
 
 	return DbValue(got->second);
 }
 
 
-vector<DbValue> Retrievable::GetValues() {
+std::vector<DbValue> Retrievable::GetValues() {
 
-	vector<DbValue> results;
+	std::vector<DbValue> results;
 
-	vector<dbValuePrototype*> &valuePrototypesVector = prototypes.GetPrototypesVector();
+	std::vector<dbValuePrototype*> &valuePrototypesVector = prototypes.GetPrototypesVector();
 
 	for (dbValuePrototype *prototype: valuePrototypesVector)
 		results.push_back(DbValue(*prototype));
@@ -177,26 +174,26 @@ vector<DbValue> Retrievable::GetValues() {
 }
 
 
-string Retrievable::GetStrValue(const string &name) {
+std::string Retrievable::GetStrValue(const std::string &name) {
 
-	unordered_map<string, dbValuePrototype> &valuePrototypesMap = prototypes.GetPrototypesMap();
+	std::unordered_map<std::string, dbValuePrototype> &valuePrototypesMap = prototypes.GetPrototypesMap();
 
-	unordered_map<string, dbValuePrototype>::const_iterator got = valuePrototypesMap.find(name);
+	std::unordered_map<std::string, dbValuePrototype>::const_iterator got = valuePrototypesMap.find(name);
 
 	if (got == valuePrototypesMap.end())
-		throw runtime_error("there's no property with that name");
+		throw std::runtime_error("there's no property with that name");
 
-	string result;
+	std::string result;
 
 	DbValue value(got->second);
 
 	switch (value.type) {
 		case DB_INTEGER:
-			result = to_string(*(static_cast<int64_t*>(value.value)));
+			result = std::to_string(*(static_cast<int64_t*>(value.value)));
 			break;
 		case DB_FLOAT:
 			assert(value.size == 8); // only double is supported
-			result = to_string(*(static_cast<double*>(value.value)));
+			result = std::to_string(*(static_cast<double*>(value.value)));
 			break;
 
 		case DB_TIME:
@@ -208,22 +205,22 @@ string Retrievable::GetStrValue(const string &name) {
 }
 
 
-const vector<dbValueSchema>& Retrievable::GetSchema() {
+const std::vector<dbValueSchema>& Retrievable::GetSchema() {
 
 	return prototypes.GetSchema();
 }
 
 
-void Retrievable::SetValue(const string &name, void *value) {
+void Retrievable::SetValue(const std::string &name, void *value) {
 
-	unordered_map<string, dbValuePrototype> &valuePrototypesMap = prototypes.GetPrototypesMap();
+	std::unordered_map<std::string, dbValuePrototype> &valuePrototypesMap = prototypes.GetPrototypesMap();
 
-	unordered_map<string, dbValuePrototype>::iterator it;
+	std::unordered_map<std::string, dbValuePrototype>::iterator it;
 
 	it = valuePrototypesMap.find(name);
 
 	if (it == valuePrototypesMap.end())
-		throw runtime_error("property with that name was not registered");
+		throw std::runtime_error("property with that name was not registered");
 
 	switch (it->second.type) {
 		case DB_TEXT: {
@@ -234,7 +231,7 @@ void Retrievable::SetValue(const string &name, void *value) {
 				memcpy(cstr, *static_cast<const char**>(value), length);
 				*static_cast<char**>(it->second.field) = cstr;
 			} else {
-				static_cast<string*>(it->second.field)->assign(*static_cast<const char**>(value)); //it must be null terminated
+				static_cast<std::string*>(it->second.field)->assign(*static_cast<const char**>(value)); //it must be null terminated
 			}
 			break;
 		}
@@ -248,14 +245,14 @@ void Retrievable::SetValue(const string &name, void *value) {
 }
 
 
-void Retrievable::SetStrValue(const string &name, const string &value) {
+void Retrievable::SetStrValue(const std::string &name, const std::string &value) {
 
-	unordered_map<string, dbValuePrototype> &valuePrototypesMap = prototypes.GetPrototypesMap();
+	std::unordered_map<std::string, dbValuePrototype> &valuePrototypesMap = prototypes.GetPrototypesMap();
 
-	unordered_map<string, dbValuePrototype>::const_iterator got = valuePrototypesMap.find(name);
+	std::unordered_map<std::string, dbValuePrototype>::const_iterator got = valuePrototypesMap.find(name);
 
 	if (got == valuePrototypesMap.end())
-		throw runtime_error("there's no property with that name");
+		throw std::runtime_error("there's no property with that name");
 
 	switch (got->second.type) {
 		case DB_INTEGER:
@@ -280,13 +277,13 @@ void Retrievable::SetStrValue(const string &name, const string &value) {
 
 
 namespace aw_storm {
-string retrievable2JSON(Retrievable &entity) {
+std::string retrievable2JSON(Retrievable &entity) {
 
-	vector<DbValue>			values(entity.GetValues());
-	ostringstream			json;
+	std::vector<DbValue>			values(entity.GetValues());
+	std::ostringstream			json;
 
 	json << "{";
-	for (vector<DbValue>::const_iterator itr = values.begin(), end = values.end(); itr != end; ++itr) {
+	for (std::vector<DbValue>::const_iterator itr = values.begin(), end = values.end(); itr != end; ++itr) {
 
 		json << "\"" << itr->name << "\": ";
 		switch (itr->type) {
@@ -319,25 +316,25 @@ string retrievable2JSON(Retrievable &entity) {
 
 void Retrievable::SavePrototype(dbValuePrototype prototype) {
 
-	unordered_map<string, dbValuePrototype> &valuePrototypesMap = prototypes.GetPrototypesMap(true);
+	std::unordered_map<std::string, dbValuePrototype> &valuePrototypesMap = prototypes.GetPrototypesMap(true);
 
-	pair<unordered_map<string, dbValuePrototype>::iterator, bool>	ret;
+	std::pair<std::unordered_map<std::string, dbValuePrototype>::iterator, bool>	ret;
 
-	ret = valuePrototypesMap.insert(pair<string, dbValuePrototype>(prototype.name, prototype));
+	ret = valuePrototypesMap.insert(std::pair<std::string, dbValuePrototype>(prototype.name, prototype));
 	assert(ret.second); //error: "value with that name is already registered"
 
-	vector<dbValuePrototype*> &valuePrototypesVector = prototypes.GetPrototypesVector(true);
+	std::vector<dbValuePrototype*> &valuePrototypesVector = prototypes.GetPrototypesVector(true);
 
 	valuePrototypesVector.push_back(&ret.first->second);
 
-	vector<dbValueSchema> &schema = prototypes.GetSchema(true);
+	std::vector<dbValueSchema> &schema = prototypes.GetSchema(true);
 	schema.push_back({ret.first->second.name, ret.first->second.type, ret.first->second.size, ret.first->second.foreignKey});
 }
 
 
 Retrievable::PrototypesAccessor::PrototypesAccessor(Retrievable &parent) : parent(parent) {}
 
-vector<dbValuePrototype*>& Retrievable::PrototypesAccessor::GetPrototypesVector(bool adding) { // declared: bool adding = false
+std::vector<dbValuePrototype*>& Retrievable::PrototypesAccessor::GetPrototypesVector(bool adding) { // declared: bool adding = false
 	if (!adding && !schema.size())
 		parent.Initialize();
 
@@ -345,7 +342,7 @@ vector<dbValuePrototype*>& Retrievable::PrototypesAccessor::GetPrototypesVector(
 }
 
 
-unordered_map<std::string, dbValuePrototype>& Retrievable::PrototypesAccessor::GetPrototypesMap(bool adding) { // declared: bool adding = false
+std::unordered_map<std::string, dbValuePrototype>& Retrievable::PrototypesAccessor::GetPrototypesMap(bool adding) { // declared: bool adding = false
 	if (!adding && !schema.size())
 		parent.Initialize();
 
@@ -353,7 +350,7 @@ unordered_map<std::string, dbValuePrototype>& Retrievable::PrototypesAccessor::G
 }
 
 
-vector<dbValueSchema>& Retrievable::PrototypesAccessor::GetSchema(bool adding) { // declared: bool adding = false
+std::vector<dbValueSchema>& Retrievable::PrototypesAccessor::GetSchema(bool adding) { // declared: bool adding = false
 	if (!adding && !schema.size())
 		parent.Initialize();
 
@@ -364,17 +361,17 @@ vector<dbValueSchema>& Retrievable::PrototypesAccessor::GetSchema(bool adding) {
 DbService::DbService() : DbService("storm.db") {}
 
 
-DbService::DbService(string connection) : connection(connection) {
+DbService::DbService(std::string connection) : connection(connection) {
 
 	if (SQLITE_OK != sqlite3_initialize())
-		throw runtime_error("Unable to initialize SQLite database");
+		throw std::runtime_error("Unable to initialize SQLite database");
 
 	// creating databese file if it doesn't exist
 	#ifdef DB_INIT
 	sqlite3			*db = nullptr;
 	if (SQLITE_OK != sqlite3_open_v2(connection.c_str(), &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL)) {
 		sqlite3_close(db);
-		throw runtime_error("Cannot open SQLite connection");
+		throw std::runtime_error("Cannot open SQLite connection");
 	}
 	sqlite3_close(db);
 	#endif
@@ -393,29 +390,29 @@ void DbService::SaveEntity(Retrievable &entity) {
 	#endif
 
 
-	vector<DbValue>		values(entity.GetValues());
+	std::vector<DbValue>		values(entity.GetValues());
 	sqlite3			*db = nullptr;
 	sqlite3_stmt		*stmt = nullptr;
 	int			rc = -1;
-	string			*sql(PrepareInsertSql(entity));
+	std::string			*sql(PrepareInsertSql(entity));
 
 	if (SQLITE_OK != sqlite3_open_v2(connection.c_str(), &db, SQLITE_OPEN_READWRITE, NULL)) {
 		sqlite3_close(db);
-		throw runtime_error("Cannot open SQLite connection");
+		throw std::runtime_error("Cannot open SQLite connection");
 	}
 
 	rc = sqlite3_prepare_v2( db, sql->c_str(), -1, &stmt, NULL );
 	if ( rc != SQLITE_OK) {
 		sqlite3_finalize( stmt );
 		sqlite3_close(db);
-		throw runtime_error("Cannot prepare stmt");
+		throw std::runtime_error("Cannot prepare stmt");
 	}
 
 	BindStmtParameters(stmt, values);
 
 	// Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection
 	#ifndef NDEBUG
-	cout << "PRAGMA foreign_keys = ON" << endl;
+	std::cout << "PRAGMA foreign_keys = ON" << std::endl;
 	#endif
 	sqlite3_exec(db, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
 
@@ -423,7 +420,7 @@ void DbService::SaveEntity(Retrievable &entity) {
 	if (( rc != SQLITE_DONE )&&( rc != SQLITE_ROW )) {
 		sqlite3_finalize( stmt );
 		sqlite3_close(db);
-		throw runtime_error("Cannot step stmt");
+		throw std::runtime_error("Cannot step stmt");
 	}
 
 	if (values[0].type == DB_INTEGER && !*(static_cast<int64_t*>(values[0].value))) { // The primary key calculated by the DB
@@ -437,29 +434,29 @@ void DbService::SaveEntity(Retrievable &entity) {
 }
 
 
-void DbService::SaveEntities(const vector<Retrievable*>& entities) { //TODO: maybe add check if all entities are from the same table...
+void DbService::SaveEntities(const std::vector<Retrievable*>& entities) { //TODO: maybe add check if all entities are from the same table...
 	#ifdef DB_INIT
 	CheckDbSchema(entities);
 	#endif
 
 	if (!entities.size())
-		throw runtime_error("there was no entities to save");
+		throw std::runtime_error("there was no entities to save");
 
 	sqlite3			*db = nullptr;
 	sqlite3_stmt		*stmt = nullptr;
 	int			rc = -1;
-	string			*sql;
-	string			previous_name;
+	std::string			*sql;
+	std::string			previous_name;
 
 	// open database
 	if (SQLITE_OK != sqlite3_open_v2(connection.c_str(), &db, SQLITE_OPEN_READWRITE, NULL)) {
 		sqlite3_close(db);
-		throw runtime_error("Cannot open SQLite connection");
+		throw std::runtime_error("Cannot open SQLite connection");
 	}
 
 	// Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection
 	#ifndef NDEBUG
-	cout << "PRAGMA foreign_keys = ON" << endl;
+	std::cout << "PRAGMA foreign_keys = ON" << std::endl;
 	#endif
 	sqlite3_exec(db, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
 
@@ -478,12 +475,12 @@ void DbService::SaveEntities(const vector<Retrievable*>& entities) { //TODO: may
 			if ( rc != SQLITE_OK) {
 				sqlite3_finalize( stmt );
 				sqlite3_close(db);
-				throw runtime_error("Cannot prepare stmt");
+				throw std::runtime_error("Cannot prepare stmt");
 			}
 			previous_name = entity->tableName;
 		}
 
-		vector<DbValue> values = entity->GetValues();
+		std::vector<DbValue> values = entity->GetValues();
 		BindStmtParameters(stmt, values);
 
 		// execute statement
@@ -491,7 +488,7 @@ void DbService::SaveEntities(const vector<Retrievable*>& entities) { //TODO: may
 		if (( rc != SQLITE_DONE )&&( rc != SQLITE_ROW )) {
 			sqlite3_finalize( stmt );
 			sqlite3_close(db);
-			throw runtime_error("Cannot step stmt");
+			throw std::runtime_error("Cannot step stmt");
 		}
 
 		if (values[0].type == DB_INTEGER && !*(static_cast<int64_t*>(values[0].value))) { // The primary key calculated by the DB
@@ -520,17 +517,17 @@ void DbService::UpdateEntity(Retrievable &entity) {
 	CheckDbSchema(entity);
 	#endif
 
-	vector<DbValue>		values(entity.GetValues());
+	std::vector<DbValue>		values(entity.GetValues());
 	sqlite3			*db = nullptr;
 	sqlite3_stmt		*stmt = nullptr;
 	int			rc = -1;
-	string			*sql(PrepareUpdateSql(entity));
+	std::string			*sql(PrepareUpdateSql(entity));
 
 
 	// open database
 	if (SQLITE_OK != sqlite3_open_v2(connection.c_str(), &db, SQLITE_OPEN_READWRITE, NULL)) {
 		sqlite3_close(db);
-		throw runtime_error("Cannot open SQLite connection");
+		throw std::runtime_error("Cannot open SQLite connection");
 	}
 
 	// prepare stmt on opened database
@@ -538,14 +535,14 @@ void DbService::UpdateEntity(Retrievable &entity) {
 	if ( rc != SQLITE_OK) {
 		sqlite3_finalize( stmt );
 		sqlite3_close(db);
-		throw runtime_error("Cannot prepare stmt");
+		throw std::runtime_error("Cannot prepare stmt");
 	}
 
 	BindStmtParameters(stmt, values, true);
 
 	// Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection
 	#ifndef NDEBUG
-	cout << "PRAGMA foreign_keys = ON" << endl;
+	std::cout << "PRAGMA foreign_keys = ON" << std::endl;
 	#endif
 	sqlite3_exec(db, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
 
@@ -553,7 +550,7 @@ void DbService::UpdateEntity(Retrievable &entity) {
 	if (sqlite3_step(stmt) != SQLITE_DONE) {
 		sqlite3_finalize( stmt );
 		sqlite3_close(db);
-		throw runtime_error("Cannot execute stmt");
+		throw std::runtime_error("Cannot execute stmt");
 	}
 
 	//FillEntity(stmt, entity);
@@ -572,23 +569,23 @@ void DbService::UpdateEntities(const std::vector<Retrievable*>& entities) {
 	#endif
 
 	if (!entities.size())
-		throw runtime_error("there was no entities to save");
+		throw std::runtime_error("there was no entities to save");
 
 	sqlite3			*db = nullptr;
 	sqlite3_stmt		*stmt = nullptr;
 	int			rc = -1;
-	string			*sql;
-	string			previous_name;
+	std::string			*sql;
+	std::string			previous_name;
 
 	// open database
 	if (SQLITE_OK != sqlite3_open_v2(connection.c_str(), &db, SQLITE_OPEN_READWRITE, NULL)) {
 		sqlite3_close(db);
-		throw runtime_error("Cannot open SQLite connection");
+		throw std::runtime_error("Cannot open SQLite connection");
 	}
 
 	// Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection
 	#ifndef NDEBUG
-	cout << "PRAGMA foreign_keys = ON" << endl;
+	std::cout << "PRAGMA foreign_keys = ON" << std::endl;
 	#endif
 	sqlite3_exec(db, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
 
@@ -607,12 +604,12 @@ void DbService::UpdateEntities(const std::vector<Retrievable*>& entities) {
 			if ( rc != SQLITE_OK) {
 				sqlite3_finalize( stmt );
 				sqlite3_close(db);
-				throw runtime_error("Cannot prepare stmt");
+				throw std::runtime_error("Cannot prepare stmt");
 			}
 			previous_name = entity->tableName;
 		}
 
-		vector<DbValue> values = entity->GetValues();
+		std::vector<DbValue> values = entity->GetValues();
 		BindStmtParameters(stmt, values, true);
 
 		// execute statement
@@ -620,7 +617,7 @@ void DbService::UpdateEntities(const std::vector<Retrievable*>& entities) {
 		if (( rc != SQLITE_DONE )&&( rc != SQLITE_ROW )) {
 			sqlite3_finalize( stmt );
 			sqlite3_close(db);
-			throw runtime_error("Cannot step stmt");
+			throw std::runtime_error("Cannot step stmt");
 		}
 
 		sqlite3_reset( stmt ); //The function sqlite3_reset() simply resets a statement, it does not release it. To destroy a prepared statement and release its memory, the statement must be finalized.
@@ -646,17 +643,17 @@ void DbService::DeleteEntity(Retrievable &entity) {
 	sqlite3_stmt		*stmt = nullptr;
 	int			rc = -1;
 
-	ostringstream		sql;
+	std::ostringstream		sql;
 	sql << "DELETE FROM " << entity.tableName << " WHERE " << entity.GetSchema()[0].name << " = :" << entity.GetSchema()[0].name;
 
 	#ifndef NDEBUG
-	cout << sql.str() << endl;
+	std::cout << sql.str() << std::endl;
 	#endif
 
 	// open database
 	if (SQLITE_OK != sqlite3_open_v2(connection.c_str(), &db, SQLITE_OPEN_READWRITE, NULL)) {
 		sqlite3_close(db);
-		throw runtime_error("Cannot open SQLite connection");
+		throw std::runtime_error("Cannot open SQLite connection");
 	}
 
 	// prepare stmt on opened database
@@ -664,7 +661,7 @@ void DbService::DeleteEntity(Retrievable &entity) {
 	if ( rc != SQLITE_OK) {
 		sqlite3_finalize( stmt );
 		sqlite3_close(db);
-		throw runtime_error("Cannot prepare stmt");
+		throw std::runtime_error("Cannot prepare stmt");
 	}
 
 	// bind id to stmt parameter
@@ -672,7 +669,7 @@ void DbService::DeleteEntity(Retrievable &entity) {
 
 	// Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection
 	#ifndef NDEBUG
-	cout << "PRAGMA foreign_keys = ON" << endl;
+	std::cout << "PRAGMA foreign_keys = ON" << std::endl;
 	#endif
 	sqlite3_exec(db, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
 
@@ -680,7 +677,7 @@ void DbService::DeleteEntity(Retrievable &entity) {
 	if (( rc != SQLITE_DONE )&&( rc != SQLITE_ROW )) {
 		sqlite3_finalize( stmt );
 		sqlite3_close(db);
-		throw runtime_error("Cannot step stmt");
+		throw std::runtime_error("Cannot step stmt");
 	}
 
 	// finalize stmt before closing database
@@ -697,22 +694,22 @@ void DbService::DeleteEntities(const std::vector<Retrievable*>& entities) {
 	#endif
 
 	if (!entities.size())
-		throw runtime_error("there was no entities to save");
+		throw std::runtime_error("there was no entities to save");
 
 	sqlite3			*db = nullptr;
 	sqlite3_stmt		*stmt = nullptr;
 	int			rc = -1;
-	string			previous_name;
+	std::string			previous_name;
 
 	// open database
 	if (SQLITE_OK != sqlite3_open_v2(connection.c_str(), &db, SQLITE_OPEN_READWRITE, NULL)) {
 		sqlite3_close(db);
-		throw runtime_error("Cannot open SQLite connection");
+		throw std::runtime_error("Cannot open SQLite connection");
 	}
 
 	// Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection
 	#ifndef NDEBUG
-	cout << "PRAGMA foreign_keys = ON" << endl;
+	std::cout << "PRAGMA foreign_keys = ON" << std::endl;
 	#endif
 	sqlite3_exec(db, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
 
@@ -724,11 +721,11 @@ void DbService::DeleteEntities(const std::vector<Retrievable*>& entities) {
 
 		if (entity->tableName != previous_name) {
 			//prepare sql query
-			ostringstream	sql;
+			std::ostringstream	sql;
 			sql << "DELETE FROM " << entity->tableName << " WHERE " << entity->GetSchema()[0].name << " = :" << entity->GetSchema()[0].name;
 
 			#ifndef NDEBUG
-			cout << sql.str() << endl;
+			std::cout << sql.str() << std::endl;
 			#endif
 
 			// prepare stmt on opened database
@@ -736,7 +733,7 @@ void DbService::DeleteEntities(const std::vector<Retrievable*>& entities) {
 			if ( rc != SQLITE_OK) {
 				sqlite3_finalize( stmt );
 				sqlite3_close(db);
-				throw runtime_error("Cannot prepare stmt");
+				throw std::runtime_error("Cannot prepare stmt");
 			}
 
 			previous_name = entity->tableName;
@@ -750,7 +747,7 @@ void DbService::DeleteEntities(const std::vector<Retrievable*>& entities) {
 		if (( rc != SQLITE_DONE )&&( rc != SQLITE_ROW )) {
 			sqlite3_finalize( stmt );
 			sqlite3_close(db);
-			throw runtime_error("Cannot step stmt");
+			throw std::runtime_error("Cannot step stmt");
 		}
 
 		sqlite3_reset( stmt ); //The function sqlite3_reset() simply resets a statement, it does not release it. To destroy a prepared statement and release its memory, the statement must be finalized.
@@ -775,18 +772,18 @@ void DbService::RetrieveEntity(Retrievable& entity) {
 	sqlite3							*db = nullptr;
 	sqlite3_stmt						*stmt = nullptr;
 	int							rc = -1;
-	string							sql(*PrepareSelectSql(entity));
+	std::string							sql(*PrepareSelectSql(entity));
 
 	sql.append(" WHERE " + entity.GetSchema()[0].name + " = :" + entity.GetSchema()[0].name);
 
 	#ifndef NDEBUG
-	cout << sql << endl;
+	std::cout << sql << std::endl;
 	#endif
 
 	// open database
 	if (SQLITE_OK != sqlite3_open_v2(connection.c_str(), &db, SQLITE_OPEN_READWRITE, NULL)) {
 		sqlite3_close(db);
-		throw runtime_error("Cannot open SQLite connection");
+		throw std::runtime_error("Cannot open SQLite connection");
 	}
 
 	// prepare stmt on opened database
@@ -794,7 +791,7 @@ void DbService::RetrieveEntity(Retrievable& entity) {
 	if ( rc != SQLITE_OK) {
 		sqlite3_finalize( stmt );
 		sqlite3_close(db);
-		throw runtime_error("Cannot prepare stmt");
+		throw std::runtime_error("Cannot prepare stmt");
 	}
 
 	// bind id to stmt parameter
@@ -806,7 +803,7 @@ void DbService::RetrieveEntity(Retrievable& entity) {
 	if (( rc != SQLITE_DONE )&&( rc != SQLITE_ROW )) {
 		sqlite3_finalize( stmt );
 		sqlite3_close(db);
-		throw runtime_error("Cannot execute stmt");
+		throw std::runtime_error("Cannot execute stmt");
 	}
 
 	assert(rc == SQLITE_ROW);
@@ -821,10 +818,10 @@ void DbService::RetrieveEntity(Retrievable& entity) {
 }
 
 
-string* DbService::SearchSqlCache(const string &tableName, unordered_map<string, string> &cache) {
+std::string* DbService::SearchSqlCache(const std::string &tableName, std::unordered_map<std::string, std::string> &cache) {
 
-	unordered_map<string, string>::iterator	it;
-	string			*result = nullptr;
+	std::unordered_map<std::string, std::string>::iterator	it;
+	std::string			*result = nullptr;
 
 	it = cache.find(tableName);
 
@@ -835,22 +832,22 @@ string* DbService::SearchSqlCache(const string &tableName, unordered_map<string,
 }
 
 
-string* DbService::PrepareInsertSql(Retrievable &entity) {
+std::string* DbService::PrepareInsertSql(Retrievable &entity) {
 
-	string		*result(SearchSqlCache(entity.tableName, sqlInsertCache));
+	std::string		*result(SearchSqlCache(entity.tableName, sqlInsertCache));
 
 	if (!result) {
 
-		const vector<dbValueSchema>				&columns(entity.GetSchema());
+		const std::vector<dbValueSchema>				&columns(entity.GetSchema());
 
 		assert(columns.size() > 1); //TODO: przeniesc gdzeis wyzej to sprawdzanie
 
-		ostringstream						sql_first_part;
-		ostringstream						sql_second_part;
-		pair<unordered_map<string, string>::iterator, bool> 	ret;
+		std::ostringstream						sql_first_part;
+		std::ostringstream						sql_second_part;
+		std::pair<std::unordered_map<std::string, std::string>::iterator, bool> 	ret;
 
 		sql_first_part << "INSERT INTO " << entity.tableName << " ( ";
-		for (vector<dbValueSchema>::const_iterator itr = columns.begin(), end = columns.end(); itr != end; ++itr) { // we don't need to skip first value (PK) because unbound parameters are interpreted as NULL
+		for (std::vector<dbValueSchema>::const_iterator itr = columns.begin(), end = columns.end(); itr != end; ++itr) { // we don't need to skip first value (PK) because unbound parameters are interpreted as NULL
 			sql_first_part << itr->name;
 			sql_second_part << ":" << itr->name;
 
@@ -865,10 +862,10 @@ string* DbService::PrepareInsertSql(Retrievable &entity) {
 		sql_first_part << sql_second_part.str();
 
 		#ifndef NDEBUG
-		cout << sql_first_part.str() << endl;
+		std::cout << sql_first_part.str() << std::endl;
 		#endif
 
-		ret = sqlInsertCache.insert(pair<string, string>(entity.tableName, sql_first_part.str().c_str()));
+		ret = sqlInsertCache.insert(std::pair<std::string, std::string>(entity.tableName, sql_first_part.str().c_str()));
 
 		assert(ret.second);
 
@@ -879,21 +876,21 @@ string* DbService::PrepareInsertSql(Retrievable &entity) {
 }
 
 
-string* DbService::PrepareSelectSql(Retrievable &entity) {
+std::string* DbService::PrepareSelectSql(Retrievable &entity) {
 
-	string		*result(SearchSqlCache(entity.tableName, sqlSelectCache));
+	std::string		*result(SearchSqlCache(entity.tableName, sqlSelectCache));
 
 	if (!result) {
 
-		const vector<dbValueSchema>				&columns(entity.GetSchema());
+		const std::vector<dbValueSchema>				&columns(entity.GetSchema());
 
 		assert(columns.size() > 1); //TODO: przeniesc gdzeis wyzej to sprawdzanie
 
-		ostringstream						sql;
-		pair<unordered_map<string, string>::iterator, bool> 	ret;
+		std::ostringstream						sql;
+		std::pair<std::unordered_map<std::string, std::string>::iterator, bool> 	ret;
 
 		sql << "SELECT ";
-		for (vector<dbValueSchema>::const_iterator itr = columns.begin(), end = columns.end(); itr != end; ++itr) {
+		for (std::vector<dbValueSchema>::const_iterator itr = columns.begin(), end = columns.end(); itr != end; ++itr) {
 			sql << itr->name;
 
 			if (itr != end-1)
@@ -902,10 +899,10 @@ string* DbService::PrepareSelectSql(Retrievable &entity) {
 		sql << " FROM " << entity.tableName;
 
 		#ifndef NDEBUG
-		cout << sql.str() << endl;
+		std::cout << sql.str() << std::endl;
 		#endif
 
-		ret = sqlSelectCache.insert(pair<string, string>(entity.tableName, sql.str().c_str()));
+		ret = sqlSelectCache.insert(std::pair<std::string, std::string>(entity.tableName, sql.str().c_str()));
 
 		assert(ret.second);
 
@@ -916,23 +913,23 @@ string* DbService::PrepareSelectSql(Retrievable &entity) {
 }
 
 
-string* DbService::PrepareUpdateSql(Retrievable &entity) {
+std::string* DbService::PrepareUpdateSql(Retrievable &entity) {
 
-	string		*result(SearchSqlCache(entity.tableName, sqlUpdateCache));
+	std::string		*result(SearchSqlCache(entity.tableName, sqlUpdateCache));
 
 	if (!result) {
 
-		const vector<dbValueSchema>				&columns(entity.GetSchema());
+		const std::vector<dbValueSchema>				&columns(entity.GetSchema());
 
 		assert(columns.size() > 1); //TODO: przeniesc gdzeis wyzej to sprawdzanie
 
 
-		ostringstream						sql;
-		pair<unordered_map<string, string>::iterator, bool> 	ret;
+		std::ostringstream						sql;
+		std::pair<std::unordered_map<std::string, std::string>::iterator, bool> 	ret;
 
 
 		sql << "UPDATE " << entity.tableName << " SET ";
-		for (vector<dbValueSchema>::const_iterator itr = columns.begin() + 1, end = columns.end(); itr != end; ++itr) { // we're bypassing first value as this is PK
+		for (std::vector<dbValueSchema>::const_iterator itr = columns.begin() + 1, end = columns.end(); itr != end; ++itr) { // we're bypassing first value as this is PK
 			sql << itr->name << " = :" << itr->name;
 
 			if (itr != end-1)
@@ -941,10 +938,10 @@ string* DbService::PrepareUpdateSql(Retrievable &entity) {
 		sql << " WHERE " << columns[0].name << " = :" <<  columns[0].name;
 
 		#ifndef NDEBUG
-		cout << sql.str() << endl;
+		std::cout << sql.str() << std::endl;
 		#endif
 
-		ret = sqlUpdateCache.insert(pair<string, string>(entity.tableName, sql.str().c_str()));
+		ret = sqlUpdateCache.insert(std::pair<std::string, std::string>(entity.tableName, sql.str().c_str()));
 
 		assert(ret.second);
 
@@ -957,7 +954,7 @@ string* DbService::PrepareUpdateSql(Retrievable &entity) {
 void DbService::BindStmtParameter(sqlite3_stmt *stmt, const DbValue &value) {
 
 	int				rc = -1;
-	string				named_parameter(":" + value.name);
+	std::string				named_parameter(":" + value.name);
 	int				idx(sqlite3_bind_parameter_index(stmt, named_parameter.c_str()));
 
 	switch (value.type) {
@@ -980,13 +977,13 @@ void DbService::BindStmtParameter(sqlite3_stmt *stmt, const DbValue &value) {
 }
 
 
-void DbService::BindStmtParameters(sqlite3_stmt *stmt, const vector<DbValue> &values, bool withPK) { // declared: withPK = false
+void DbService::BindStmtParameters(sqlite3_stmt *stmt, const std::vector<DbValue> &values, bool withPK) { // declared: withPK = false
 
 	assert(values.size() > 1);
 
 	withPK = withPK || !(values[0].type == DB_INTEGER && !*(static_cast<int64_t*>(values[0].value)));
 
-	for (vector<DbValue>::const_iterator itr = values.begin() + !withPK, end = values.end(); itr != end; ++itr) { // if withPK is set to false we're bypassing the first value as this is PK
+	for (std::vector<DbValue>::const_iterator itr = values.begin() + !withPK, end = values.end(); itr != end; ++itr) { // if withPK is set to false we're bypassing the first value as this is PK
 
 		BindStmtParameter(stmt, *itr);
 	}
@@ -995,7 +992,7 @@ void DbService::BindStmtParameters(sqlite3_stmt *stmt, const vector<DbValue> &va
 
 void DbService::FillEntity(sqlite3_stmt* stmt, Retrievable &entity) {
 
-	const vector<dbValueSchema>		&columns(entity.GetSchema());
+	const std::vector<dbValueSchema>		&columns(entity.GetSchema());
 
 	//loop over columns
 	for (int i = 0, column_count = columns.size(); i < column_count; ++i) {
@@ -1025,21 +1022,21 @@ void DbService::FillEntity(sqlite3_stmt* stmt, Retrievable &entity) {
 #ifdef DB_INIT
 void DbService::CheckDbSchema(Retrievable& entity) {
 
-	unordered_set<string>::const_iterator got = DbService::initializedTables.find(entity.tableName);
+	std::unordered_set<std::string>::const_iterator got = DbService::initializedTables.find(entity.tableName);
 
 	if (got == DbService::initializedTables.end()) {
 
-		ostringstream			sql;
+		std::ostringstream			sql;
 		sql << "PRAGMA table_info('" << entity.tableName << "')";
 
 		#ifndef NDEBUG
-		cout << sql.str() << endl;
+		std::cout << sql.str() << std::endl;
 		#endif
 
 		sqlite3				*db = nullptr;
 		sqlite3_stmt			*stmt = nullptr;
 		int				rc = -1;
-		const vector<dbValueSchema>	&columns(entity.GetSchema());
+		const std::vector<dbValueSchema>	&columns(entity.GetSchema());
 		bool				inconsistent = false;
 
 		assert(columns.size() > 1);
@@ -1048,7 +1045,7 @@ void DbService::CheckDbSchema(Retrievable& entity) {
 		// open database
 		if (SQLITE_OK != sqlite3_open_v2(connection.c_str(), &db, SQLITE_OPEN_READWRITE, NULL)) {
 			sqlite3_close(db);
-			throw runtime_error("Cannot open SQLite connection");
+			throw std::runtime_error("Cannot open SQLite connection");
 		}
 
 		// prepare stmt on opened database
@@ -1056,7 +1053,7 @@ void DbService::CheckDbSchema(Retrievable& entity) {
 		if ( rc != SQLITE_OK) {
 			sqlite3_finalize( stmt );
 			sqlite3_close(db);
-			throw runtime_error("Cannot prepare stmt");
+			throw std::runtime_error("Cannot prepare stmt");
 		}
 
 
@@ -1071,7 +1068,7 @@ void DbService::CheckDbSchema(Retrievable& entity) {
 				break;
 			}
 
-			string type(dbDataType2string(columns[i].type));
+			std::string type(dbDataType2string(columns[i].type));
 
 			if (type.compare(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)))) {
 				inconsistent = true;
@@ -1103,8 +1100,8 @@ void DbService::CheckDbSchema(Retrievable& entity) {
 }
 
 
-void DbService::CheckDbSchema(const vector<Retrievable*>& entities) {
-	string		previous_name;
+void DbService::CheckDbSchema(const std::vector<Retrievable*>& entities) {
+	std::string		previous_name;
 
 	for (Retrievable* entity: entities) {
 		if (entity->tableName != previous_name) {
@@ -1118,14 +1115,14 @@ void DbService::CheckDbSchema(const vector<Retrievable*>& entities) {
 void DbService::RecreateTable(Retrievable& entity) {
 
 	sqlite3				*db = nullptr;
-	const vector<dbValueSchema>	&columns(entity.GetSchema());
-	string				sql;
+	const std::vector<dbValueSchema>	&columns(entity.GetSchema());
+	std::string				sql;
 
 	assert(columns.size() > 1);
 
 	if (SQLITE_OK != sqlite3_open_v2(connection.c_str(), &db, SQLITE_OPEN_READWRITE, NULL)) {
 		sqlite3_close(db);
-		throw runtime_error("Cannot open SQLite connection");
+		throw std::runtime_error("Cannot open SQLite connection");
 	}
 
 	sql = "DROP TABLE IF EXISTS " + entity.tableName + "; CREATE TABLE " + entity.tableName + " ( ";
@@ -1147,7 +1144,7 @@ void DbService::RecreateTable(Retrievable& entity) {
 	sql += " );";
 
 	#ifndef NDEBUG
-	cout << sql << endl;
+	std::cout << sql << std::endl;
 	#endif
 
 	sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
@@ -1156,7 +1153,7 @@ void DbService::RecreateTable(Retrievable& entity) {
 }
 
 
-string DbService::dbDataType2string(DbDataType type) {
+std::string DbService::dbDataType2string(DbDataType type) {
 	switch (type) {
 		case DB_INTEGER:
 			return {"integer"};

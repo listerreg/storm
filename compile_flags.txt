@@ -3,3 +3,4 @@
 -std=c++0x
 -Iinclude
 -Iexternal/SQLite
+-DDB_INIT
