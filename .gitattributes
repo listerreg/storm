@@ -1,1 +1,2 @@
 external/* linguist-vendored
+include/sqlite3.h linguist-vendored
