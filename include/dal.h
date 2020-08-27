@@ -66,14 +66,6 @@ struct dbValueSchema {
 
 class Retrievable {
 public:
-	Retrievable(std::string tableName);
-
-	// needed so the implicit copy and move c'tors won't be invoked
-	Retrievable(const Retrievable &other);
-	Retrievable(Retrievable &&other);
-	Retrievable& operator=(const Retrievable &other);
-	Retrievable& operator=(Retrievable &&other);
-
 	DbValue GetValue(const std::string&);
 	std::vector<DbValue> GetValues();
 	std::string GetStrValue(const std::string&);
@@ -87,6 +79,14 @@ public:
 	friend std::string retrievable2JSON(Retrievable&);
 
 protected:
+	Retrievable(std::string tableName);
+
+	// needed so the implicit copy and move c'tors won't be invoked
+	Retrievable(const Retrievable &other);
+	Retrievable(Retrievable &&other);
+	Retrievable& operator=(const Retrievable &other);
+	Retrievable& operator=(Retrievable &&other);
+
 	template <typename T, typename std::enable_if<std::is_integral<typename std::remove_pointer<T>::type>::value && std::numeric_limits<typename std::remove_pointer<T>::type>::is_signed || sizeof(typename std::remove_pointer<T>::type) < 8>::type* = nullptr>
 	void RegisterField(std::string, T);
 

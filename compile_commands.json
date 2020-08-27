@@ -1,0 +1,30 @@
+[
+    {
+        "arguments": [
+            "c++",
+            "-c",
+            "-Iexternal/SQLite",
+            "-Iinclude",
+            "-std=c++14",
+            "-Wall",
+            "-Wextra",
+            "-pedantic",
+            "-o",
+            "build/dal.o",
+            "src/dal.cpp"
+        ],
+        "directory": "/home/listerreg/projects/storm",
+        "file": "src/dal.cpp"
+    },
+    {
+        "arguments": [
+            "cc",
+            "-c",
+            "-o",
+            "external/SQLite/sqlite3.o",
+            "external/SQLite/sqlite3.c"
+        ],
+        "directory": "/home/listerreg/projects/storm",
+        "file": "external/SQLite/sqlite3.c"
+    }
+]
